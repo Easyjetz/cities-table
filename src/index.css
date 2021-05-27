@@ -1,0 +1,16 @@
+.search__block {
+    margin: 40px auto;
+    max-width: 50%;
+}
+
+.search__input {
+    border-radius: 12px;
+}
+
+.search__input:focus:invalid {
+    box-shadow: 0 0 0 0.15rem rgba(245, 43, 7, 0.8);
+}
+
+.search__input:focus {
+    box-shadow: 0 0 0 0.15rem rgba(0, 123, 255, .25);
+}
