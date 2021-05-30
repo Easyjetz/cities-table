@@ -11,6 +11,7 @@ export interface ICity {
 
 interface ICitiesContextProps {
   cities: ICity[],
+  error: string,
   addCity: (item: ICity) => void,
   deleteCity: (item: ICity) => void,
 }
@@ -18,6 +19,7 @@ interface ICitiesContextProps {
 
 export const CitiesContext = createContext<ICitiesContextProps>({
   cities: [],
+  error: '',
   addCity: () => { },
   deleteCity: () => {},
 })

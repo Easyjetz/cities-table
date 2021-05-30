@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react'
 import axios from 'axios';
 import { CitiesContext, ICity } from '../context/CitiesContext';
-import { Form, Spinner } from 'react-bootstrap';
+import { Alert, Button, Col, Form, Row, Spinner } from 'react-bootstrap';
 
 
 const fetchCities = async (name: string) => {
@@ -14,7 +14,10 @@ const fetchCities = async (name: string) => {
       'x-rapidapi-host': 'wft-geo-db.p.rapidapi.com'
     },
     params: { namePrefix: name, languageCode: langCode || 'ru' }
+
   });
+
+  console.log(result);
   return result.data.data;
 
 }
@@ -47,6 +50,7 @@ export const SearchCity = () => {
 
   return (
     <>
+      {context.error && <Alert className="search__error" variant='danger'>{context.error}</Alert>}
       <div className="search__block">
         <Form.Control type="text" onChange={nameHandler} value={name} className="search__input" placeholder="Введите город" pattern='[\s\S]{3,}' />
       </div>
@@ -54,19 +58,27 @@ export const SearchCity = () => {
         <Spinner animation="border" role="status">
           <span className="sr-only">Loading...</span>
         </Spinner> :
-        citiesList && citiesList.map((item: ICity) => {
-          return (
-            <div key={item.id}>
-              <p>{item.city}</p>
-              <button onClick={() => {
-                setCitiesList([]);
-                setName('')
-                return context.addCity(item)
-              }}>Добавить</button>
-            </div>
-          )
-        })
-      } 
+        <div className="search__items">
+          {citiesList && citiesList.map((item: ICity) => {
+            return (
+              <Row className="search__item" key={item.id}>
+                <Col xs={4}>{item.city}</Col>
+                <Col xs={4}>{item.country}</Col>
+                <Col xs={2}>{item.population}</Col>
+                <Col xs={1}>
+                  <Button variant="outline-success" onClick={() => {
+                    setCitiesList([]);
+                    setName('')
+                    return context.addCity(item)
+                    }}>
+                      Добавить
+                  </Button>
+                </Col>
+              </Row>
+            )
+        })}
+      </div>   
+      }
     </>
   )
 }

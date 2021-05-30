@@ -5,12 +5,18 @@ import { ICity } from "../context/CitiesContext";
 
 export const useCities = () => {
   const [cities, setCities] = useState<ICity[]>([]);
+  const [error, setError] = useState('');
 
   const addCity = (city: ICity) => {
-    setCities(cities => {
-      localStorage.setItem('Cities', JSON.stringify([...cities, city]))
-      return [...cities, city]
-    });
+    const isExist = cities.reduce((acc, i) => i.id === city.id ? true : acc, false);
+    if (!isExist) {
+      setCities(cities => {
+        localStorage.setItem('Cities', JSON.stringify([...cities, city]))
+        return [...cities, city]
+      });
+      return setError('');
+    }
+    setError('Выбранный Вами город уже добавлен')
   }
 
   const deleteCity = (city: ICity) => {
@@ -29,5 +35,5 @@ export const useCities = () => {
 
 
 
-  return {cities, addCity, deleteCity}
+  return {cities, addCity, deleteCity, error}
 }

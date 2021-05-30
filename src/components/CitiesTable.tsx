@@ -1,38 +1,99 @@
-import React, { useContext } from 'react'
+import { matchSorter } from 'match-sorter';
+import React, { useContext, useMemo } from 'react'
 import { Button, Table } from 'react-bootstrap';
-import { useSortBy, useTable } from 'react-table'
-import { CitiesContext } from '../context/CitiesContext'
+import { FilterProps, FilterValue, IdType, Row, useFilters, useSortBy, useTable } from 'react-table'
+import { CitiesContext, ICity } from '../context/CitiesContext'
 
 export const CitiesTable = () => {
+
+
+  function DefaultColumnFilter({
+    column: { filterValue, preFilteredRows, setFilter },
+  }: FilterProps<ICity>) {
+  
+    return (
+      <span>
+        <input
+        className="filter__search"
+        value={filterValue || ''}
+        onChange={e => {
+          setFilter(e.target.value || undefined)
+        }}
+        placeholder={`Найти...`}
+      />
+      </span>
+      
+    )
+  }
+
+  const defaultColumn = useMemo(() => ({ Filter: DefaultColumnFilter }), []);
+
+  function fuzzyTextFilter<T extends Record<string, unknown>>(
+    rows: Array<Row<T>>,
+    id: IdType<T>,
+    filterValue: FilterValue
+  ): Array<Row<T>> {
+    return matchSorter(rows, filterValue, {
+      keys: [(row: Row<T>) => row.values[id]],
+    })
+  }
+
+  function defaultTextFilter<T extends Record<string, unknown>>(
+    rows: Array<Row<T>>,
+    id: IdType<T>,
+    filterValue: FilterValue
+  ): Array<Row<T>> {
+    return rows.filter(row => {
+      const rowValue = row.values[id]
+      return rowValue !== undefined
+        ? String(rowValue)
+            .toLowerCase()
+            .startsWith(String(filterValue).toLowerCase())
+        : true
+    })
+  }
+
+
+  fuzzyTextFilter.autoRemove = (val: any) => !val;
+  const filterTypes = useMemo(() => ({
+    fuzzyText: fuzzyTextFilter,
+    text: defaultTextFilter
+  }), [])
+
+
 
   const citiesContext = useContext(CitiesContext);
 
   const columns = React.useMemo(
     () => [
       {
-        Header: 'Название',
+        Header: 'Название города',
         accessor: 'city' as const,
-      },
-      {
-        Header: 'Население',
-        accessor: 'population' as const,
-      },
-      {
-        Header: 'Регион',
-        accessor: 'region' as const,
       },
       {
         Header: 'Страна',
         accessor: 'country' as const,
+        filter: 'fuzzyText',
       },
       {
-        Header: 'Del',
+        Header: 'Население',
+        accessor: 'population' as const,
+        disableFilters: true,
+      },
+      {
+        Header: 'Регион',
+        accessor: 'region' as const,
+        disableFilters: true,
+      },
+      {
+        Header: '',
+        disableFilters: true,
+        disableSortBy: true,
         id: 'delete',
         accessor: (str: any) => 'delete',
         Cell: (tableProps: any) => (
           <Button variant="outline-danger" onClick={() => {
             const selectItemId = tableProps.cell.row.id;
-            console.log(tableProps.data[selectItemId]);
             citiesContext.deleteCity(tableProps.data[selectItemId])
           }}>Удалить</Button>
         )
@@ -52,23 +113,27 @@ export const CitiesTable = () => {
     {
       columns,
       data: citiesContext.cities,
+      defaultColumn,
+      filterTypes: filterTypes,
     },
+    useFilters,
     useSortBy,
-  )
+    )
   
-  console.log(headerGroups);
+  
 
   return (
-    <Table {...getTableProps()}>
+    <Table className="table__block" {...getTableProps()}>
       <thead>
         {headerGroups.map(headerGroup => (
           <tr {...headerGroup.getHeaderGroupProps()}>
             {headerGroup.headers.map(column => (
               <th {...column.getHeaderProps(column.getSortByToggleProps())}>
-                {column.render('Header')}
                 <span>
+                  {column.render('Header')}
                   {column.isSorted ? column.isSortedDesc ? '↑' : "↓" : ''}
                 </span>
+                <div>{column.canFilter ? column.render('Filter') : null}</div>
               </th>
             ))}
           </tr>
