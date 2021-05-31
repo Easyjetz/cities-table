@@ -28,15 +28,6 @@ export const CitiesTable = () => {
 
   const defaultColumn = useMemo(() => ({ Filter: DefaultColumnFilter }), []);
 
-  function fuzzyTextFilter<T extends Record<string, unknown>>(
-    rows: Array<Row<T>>,
-    id: IdType<T>,
-    filterValue: FilterValue
-  ): Array<Row<T>> {
-    return matchSorter(rows, filterValue, {
-      keys: [(row: Row<T>) => row.values[id]],
-    })
-  }
 
   function defaultTextFilter<T extends Record<string, unknown>>(
     rows: Array<Row<T>>,
@@ -54,9 +45,7 @@ export const CitiesTable = () => {
   }
 
 
-  fuzzyTextFilter.autoRemove = (val: any) => !val;
   const filterTypes = useMemo(() => ({
-    fuzzyText: fuzzyTextFilter,
     text: defaultTextFilter
   }), [])
 
@@ -73,7 +62,6 @@ export const CitiesTable = () => {
       {
         Header: 'Страна',
         accessor: 'country' as const,
-        filter: 'fuzzyText',
       },
       {
         Header: 'Население',
