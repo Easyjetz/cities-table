@@ -1,4 +1,3 @@
-import { matchSorter } from 'match-sorter';
 import React, { useContext, useMemo } from 'react'
 import { Button, Table } from 'react-bootstrap';
 import { FilterProps, FilterValue, IdType, Row, useFilters, useSortBy, useTable } from 'react-table'
